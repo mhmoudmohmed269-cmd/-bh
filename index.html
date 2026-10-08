@@ -76,6 +76,19 @@
           <span>🔓</span> استخدام من التحويش
         </button>
 
+        <!-- Pending Incomes Card (قبض قيد الانتظار) -->
+        <div class="card" id="pendingIncomesCard" style="display:none; border-top: 2px solid var(--essentials);">
+          <div class="card-header">
+            <span class="card-title"><span class="card-icon">⏳</span> قبض قيد الانتظار</span>
+            <span class="sub-balance-label" id="pendingCountBadge">0 عمليات</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: rgba(255,170,0,0.06); padding: 10px; border-radius: var(--r-ctrl); border: 1px solid rgba(255,170,0,0.2);">
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">إجمالي المنتظر تحويله:</span>
+            <strong class="val-outings" style="font-size: 1.3rem;" id="pendingTotalAmountVal">0 ج.م</strong>
+          </div>
+          <div id="dashboardPendingList" class="history-list"></div>
+        </div>
+
         <!-- Outings Progress Card -->
         <div class="card outings-widget">
           <div class="card-header">
@@ -514,10 +527,17 @@
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">ملاحظة (اختياري)</label>
-          <input type="text" id="incomeNote" class="form-control" placeholder="مثال: قبض أسبوع طلبات">
+          <label class="form-label">حالة الاستلام والقبض</label>
+          <select id="incomeStatus" class="form-control">
+            <option value="received">✅ تم الاستلام فعلياً (تقسيم فوري للرصيد)</option>
+            <option value="pending">⏳ قيد الانتظار (تحويل متوقع - لم يُستلم بعد)</option>
+          </select>
         </div>
-        <button type="submit" class="btn btn-primary btn-full">حفظ القبض وتقسيمه</button>
+        <div class="form-group">
+          <label class="form-label">ملاحظة (اختياري)</label>
+          <input type="text" id="incomeNote" class="form-control" placeholder="مثال: قبض أسبوع طلبات المتوقع">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">حفظ عملية القبض</button>
       </form>
     </div>
   </div>

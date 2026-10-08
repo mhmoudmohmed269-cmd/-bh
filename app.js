@@ -43,7 +43,8 @@ class BHApp {
         }
       ],
       debts: [],
-      riderShifts: []
+      riderShifts: [],
+      pendingIncomes: []
     };
   }
 
@@ -54,7 +55,7 @@ class BHApp {
       if (!raw) return this.getDefaultData();
       const parsed = JSON.parse(raw);
       // Merge with defaults in case of missing keys
-      return { ...this.getDefaultData(), ...parsed };
+      return { ...this.getDefaultData(), ...parsed, pendingIncomes: parsed.pendingIncomes || [] };
     } catch (e) {
       console.error('Error loading LocalStorage data', e);
       return this.getDefaultData();
@@ -193,19 +194,42 @@ class BHApp {
     if (badgeMotivation) badgeMotivation.textContent = text;
   }
 
-  // Handle New Income Addition (+ قبض جديد)
+  // Handle New Income Addition (+ قبض جديد أو قيد الانتظار)
   handleNewIncome(e) {
     e.preventDefault();
     const amount = parseFloat(document.getElementById('incomeAmount').value);
     const date = document.getElementById('incomeDate').value || new Date().toISOString().split('T')[0];
     const source = document.getElementById('incomeSource').value;
     const notes = document.getElementById('incomeNote').value || '';
+    const status = (document.getElementById('incomeStatus') && document.getElementById('incomeStatus').value) || 'received';
 
     if (isNaN(amount) || amount <= 0) {
       this.showToast('⚠️ يرجى إدخال مبلغ قبض صحيح');
       return;
     }
 
+    // ⏳ Handle Pending Income (لم يُستلم بعد)
+    if (status === 'pending') {
+      const pendingEntry = {
+        id: 'pend_' + Date.now(),
+        amount,
+        source,
+        notes,
+        date
+      };
+
+      if (!this.data.pendingIncomes) this.data.pendingIncomes = [];
+      this.data.pendingIncomes.unshift(pendingEntry);
+      this.saveData();
+      this.closeModal('newIncomeModal');
+      this.renderAll();
+      this.showToast('⏳ تم تسجيل القبض كـ "قيد الانتظار" بنجاح', 'info');
+      document.getElementById('incomeAmount').value = '';
+      document.getElementById('incomeNote').value = '';
+      return;
+    }
+
+    // ✅ Handle Received Income (استلام فوري وتقسيم)
     const sRatio = this.data.settings.savingsRatio / 100;
     const eRatio = this.data.settings.essentialsRatio / 100;
     const oRatio = this.data.settings.outingsRatio / 100;
@@ -248,6 +272,60 @@ class BHApp {
     // Reset Form
     document.getElementById('incomeAmount').value = '';
     document.getElementById('incomeNote').value = '';
+  }
+
+  // Confirm Receipt of Pending Income (تحويل من "قيد الانتظار" إلى "قبض حقيقي")
+  confirmPendingIncome(pendId) {
+    const item = (this.data.pendingIncomes || []).find(p => p.id === pendId);
+    if (!item) return;
+
+    const amount = item.amount;
+    const sRatio = this.data.settings.savingsRatio / 100;
+    const eRatio = this.data.settings.essentialsRatio / 100;
+    const oRatio = this.data.settings.outingsRatio / 100;
+
+    const savingsAmt = Math.round(amount * sRatio);
+    const essentialsAmt = Math.round(amount * eRatio);
+    const outingsAmt = Math.round(amount * oRatio);
+
+    this.data.balances.reservedSavings += savingsAmt;
+    this.data.balances.spendableBalance += (essentialsAmt + outingsAmt);
+
+    this.data.incomes.unshift({
+      id: 'inc_' + Date.now(),
+      amount,
+      savingsAmt,
+      essentialsAmt,
+      outingsAmt,
+      date: new Date().toISOString().split('T')[0],
+      source: item.source,
+      notes: item.notes ? `استلام قبض منتظر: ${item.notes}` : 'استلام قبض كان قيد الانتظار'
+    });
+
+    this.data.pendingIncomes = this.data.pendingIncomes.filter(p => p.id !== pendId);
+    this.saveData();
+
+    // Populate Celebration Screen
+    document.getElementById('celebSavingsRatio').textContent = this.data.settings.savingsRatio;
+    document.getElementById('celebEssentialsRatio').textContent = this.data.settings.essentialsRatio;
+    document.getElementById('celebOutingsRatio').textContent = this.data.settings.outingsRatio;
+
+    document.getElementById('celebSavingsAmt').textContent = savingsAmt + ' ج.م';
+    document.getElementById('celebEssentialsAmt').textContent = essentialsAmt + ' ج.م';
+    document.getElementById('celebOutingsAmt').textContent = outingsAmt + ' ج.م';
+
+    this.openModal('incomeCelebrationModal');
+    this.renderAll();
+    this.showToast(`🎉 تم استلام ${amount.toLocaleString()} ج.م وتقسيمها للتحويش والصرف بنجاح!`, 'success');
+  }
+
+  // Delete Pending Income
+  deletePendingIncome(pendId) {
+    if (!confirm('هل أنت متأكد من حذف هذا القبض المنتظر؟')) return;
+    this.data.pendingIncomes = (this.data.pendingIncomes || []).filter(p => p.id !== pendId);
+    this.saveData();
+    this.renderAll();
+    this.showToast('🗑️ تم حذف القبض المنتظر بنجاح');
   }
 
   // Handle New Expense (+ مصروف)
@@ -675,6 +753,7 @@ class BHApp {
   // Render Master Logic
   renderAll() {
     this.renderBalances();
+    this.renderPendingIncomes();
     this.renderOutingsWidget();
     this.renderQuickStats();
     this.renderVariableIncomeStats();
@@ -684,6 +763,46 @@ class BHApp {
     this.renderGoals();
     this.renderDebts();
     this.calculateFutureSimulation();
+  }
+
+  // Render Pending Incomes Card & Items
+  renderPendingIncomes() {
+    const list = this.data.pendingIncomes || [];
+    const card = document.getElementById('pendingIncomesCard');
+    const container = document.getElementById('dashboardPendingList');
+    const badge = document.getElementById('pendingCountBadge');
+    const totalValEl = document.getElementById('pendingTotalAmountVal');
+
+    if (!card) return;
+
+    if (list.length === 0) {
+      card.style.display = 'none';
+      return;
+    }
+
+    card.style.display = 'block';
+
+    const totalAmt = list.reduce((sum, i) => sum + i.amount, 0);
+    if (totalValEl) totalValEl.textContent = totalAmt.toLocaleString('ar-EG') + ' ج.م';
+    if (badge) badge.textContent = `${list.length} عمليات منتظرة`;
+
+    if (!container) return;
+
+    container.innerHTML = list.map(item => `
+      <div class="list-item" style="border-right: 3px solid var(--essentials);">
+        <div class="item-main">
+          <div class="item-icon outing">⏳</div>
+          <div class="item-details">
+            <span class="item-title">${item.source} — ${item.amount.toLocaleString()} ج.م</span>
+            <span class="item-sub">${item.notes || 'قبض منتظر'} • ${item.date}</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button class="btn btn-savings btn-sm" onclick="app.confirmPendingIncome('${item.id}')">✅ تم الاستلام</button>
+          <button class="delete-btn" onclick="app.deletePendingIncome('${item.id}')" title="حذف">🗑️</button>
+        </div>
+      </div>
+    `).join('');
   }
 
   renderBalances() {
