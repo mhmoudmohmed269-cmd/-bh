@@ -158,10 +158,10 @@
           <span>➕</span> تسجيل قبض جديد
         </button>
 
-        <!-- Rider Daily Shift Calculator -->
+        <!-- Smart Rider Daily Shift Calculator -->
         <div class="card">
           <div class="card-header">
-            <span class="card-title"><span class="card-icon">🚴‍♂️</span> حاسبة وردية Rider (طلبات)</span>
+            <span class="card-title"><span class="card-icon">🚴‍♂️</span> حاسبة وردية الدليفري والكفاءة الذكية</span>
           </div>
           <form id="riderShiftForm" onsubmit="app.handleRiderShiftSubmit(event)">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -185,14 +185,40 @@
                 <input type="number" id="shiftTips" class="form-control" value="0" oninput="app.calculateShiftNet()">
               </div>
               <div class="form-group">
-                <label class="form-label">مصاريف الشغل</label>
+                <label class="form-label">بنزين ومصاريف</label>
                 <input type="number" id="shiftExpenses" class="form-control" value="0" oninput="app.calculateShiftNet()">
               </div>
             </div>
 
-            <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); padding: 12px; border-radius: var(--radius-md); text-align: center; margin-bottom: 12px;">
-              <span style="font-size: 0.85rem; color: var(--text-muted);">صافي دخل الوردية اليوم:</span>
-              <div style="font-size: 1.6rem; font-weight: 900; color: #38bdf8;" id="shiftNetCalcVal">440 ج.م</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+              <div class="form-group">
+                <label class="form-label">ساعات الشفت (ساعة)</label>
+                <input type="number" id="shiftHours" class="form-control" value="8" step="0.5" oninput="app.calculateShiftNet()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">المسافة المقطوعة (كم)</label>
+                <input type="number" id="shiftKm" class="form-control" value="100" oninput="app.calculateShiftNet()">
+              </div>
+            </div>
+
+            <!-- Smart Shift Efficiency Metrics Grid -->
+            <div class="stats-grid" style="margin-bottom: 12px;">
+              <div class="stat-box">
+                <span class="title">💵 صافي دخل اليوم</span>
+                <span class="value val-spendable" id="shiftNetCalcVal">440 ج.م</span>
+              </div>
+              <div class="stat-box">
+                <span class="title">⏱️ ربح الساعة</span>
+                <span class="value val-savings" id="shiftHourlyRateVal">55 ج.م/س</span>
+              </div>
+              <div class="stat-box">
+                <span class="title">🛣️ ربح الكيلومتر</span>
+                <span class="value val-spendable" id="shiftKmRateVal">4.4 ج.م/كم</span>
+              </div>
+              <div class="stat-box">
+                <span class="title">⛽ نسبة المصاريف</span>
+                <span class="value val-outings" id="shiftExpenseRatioVal">0%</span>
+              </div>
             </div>
 
             <button type="submit" class="btn btn-savings btn-full">

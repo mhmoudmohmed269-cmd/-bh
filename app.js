@@ -394,17 +394,41 @@ class BHApp {
     document.getElementById('withdrawReason').value = '';
   }
 
-  // Calculate Rider Shift Net Income
+  // Calculate Rider Shift Net Income & Efficiency
   calculateShiftNet() {
-    const orders = parseFloat(document.getElementById('shiftOrders').value) || 0;
-    const rate = parseFloat(document.getElementById('shiftRate').value) || 0;
-    const bonus = parseFloat(document.getElementById('shiftBonus').value) || 0;
-    const tips = parseFloat(document.getElementById('shiftTips').value) || 0;
-    const expenses = parseFloat(document.getElementById('shiftExpenses').value) || 0;
+    var orders = parseFloat(document.getElementById('shiftOrders').value) || 0;
+    var rate = parseFloat(document.getElementById('shiftRate').value) || 0;
+    var bonus = parseFloat(document.getElementById('shiftBonus').value) || 0;
+    var tips = parseFloat(document.getElementById('shiftTips').value) || 0;
+    var expenses = parseFloat(document.getElementById('shiftExpenses').value) || 0;
+    var hours = parseFloat(document.getElementById('shiftHours').value) || 0;
+    var km = parseFloat(document.getElementById('shiftKm').value) || 0;
 
-    const net = (orders * rate) + bonus + tips - expenses;
-    const display = document.getElementById('shiftNetCalcVal');
-    if (display) display.textContent = net + ' ج.م';
+    var gross = (orders * rate) + bonus + tips;
+    var net = gross - expenses;
+
+    var netEl = document.getElementById('shiftNetCalcVal');
+    var hourlyEl = document.getElementById('shiftHourlyRateVal');
+    var kmEl = document.getElementById('shiftKmRateVal');
+    var ratioEl = document.getElementById('shiftExpenseRatioVal');
+
+    if (netEl) netEl.textContent = net.toLocaleString('ar-EG') + ' ج.م';
+
+    if (hourlyEl) {
+      var hourlyRate = hours > 0 ? (net / hours).toFixed(1) : 0;
+      hourlyEl.textContent = hourlyRate + ' ج.م/س';
+    }
+
+    if (kmEl) {
+      var kmRate = km > 0 ? (net / km).toFixed(1) : 0;
+      kmEl.textContent = kmRate + ' ج.م/كم';
+    }
+
+    if (ratioEl) {
+      var ratio = gross > 0 ? Math.round((expenses / gross) * 100) : 0;
+      ratioEl.textContent = ratio + '%';
+    }
+
     return net;
   }
 
