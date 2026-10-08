@@ -56,10 +56,11 @@ body::before {
   z-index: 0;
   pointer-events: none;
   background-image:
-    radial-gradient(circle, rgba(0, 217, 255, 0.18) 1.2px, transparent 1.2px),
-    radial-gradient(circle, rgba(0, 200, 150, 0.12) 1.8px, transparent 1.8px);
+    radial-gradient(circle, rgba(0, 217, 255, 0.15) 1.2px, transparent 1.2px),
+    radial-gradient(circle, rgba(0, 200, 150, 0.10) 1.8px, transparent 1.8px);
   background-size: 22px 22px, 44px 44px;
   background-position: 0 0, 11px 11px;
+  transform: translateZ(0);
 }
 
 /* Ambient colorful glows behind cards */
@@ -68,11 +69,17 @@ body::after {
   position: fixed;
   inset: 0;
   background: 
-    radial-gradient(circle at 10% 15%, rgba(0, 217, 255, 0.22) 0%, transparent 45%),
-    radial-gradient(circle at 90% 75%, rgba(192, 132, 252, 0.18) 0%, transparent 45%),
-    radial-gradient(circle at 50% 45%, rgba(0, 200, 122, 0.14) 0%, transparent 55%);
+    radial-gradient(circle at 10% 15%, rgba(0, 217, 255, 0.18) 0%, transparent 40%),
+    radial-gradient(circle at 90% 75%, rgba(192, 132, 252, 0.14) 0%, transparent 40%),
+    radial-gradient(circle at 50% 45%, rgba(0, 200, 122, 0.10) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
+  transform: translateZ(0);
+}
+
+html, body {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -100,7 +107,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════
-   NAVBAR  ─  glassmorphism
+   NAVBAR  ─  glassmorphism (GPU Accelerated)
 ═══════════════════════════════════════════════════ */
 .app-header {
   position: sticky;
@@ -108,15 +115,16 @@ body {
   z-index: 50;
   width: 100%;
   height: var(--nav-h);
-  background: rgba(6, 12, 22, 0.55);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(6, 12, 22, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.10);
   padding: 0 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  transform: translateZ(0);
 }
 
 .brand {
@@ -253,14 +261,15 @@ body {
    CARDS  ─  Glass panels, blur(12px)
 ═══════════════════════════════════════════════════ */
 .card {
-  background: rgba(12, 20, 35, 0.45);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.10);
+  background: rgba(10, 18, 30, 0.70);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   border-radius: var(--r-card);
   padding: 18px;
   transition: var(--trans-fast);
+  transform: translateZ(0);
 }
 
 .card-header {
@@ -514,9 +523,7 @@ body {
 
 .list-item {
   background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--r-ctrl);
   padding: 12px;
   display: flex;
@@ -749,13 +756,13 @@ select.form-control option {
   position: fixed;
   bottom: 0;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateZ(0);
   width: 100%;
   max-width: var(--max-w);
   height: var(--nav-h);
-  background: rgba(6, 12, 22, 0.55);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(6, 12, 22, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid rgba(255, 255, 255, 0.10);
   display: flex;
   align-items: center;
